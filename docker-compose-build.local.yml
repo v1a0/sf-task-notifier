@@ -67,7 +67,6 @@ volumes:
   postgres-data:
   static_volume:
 
-
 networks:
   default:
 
