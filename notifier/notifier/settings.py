@@ -11,6 +11,10 @@ https://docs.djangoproject.com/en/4.1/ref/settings/
 """
 
 from pathlib import Path
+from environ import Env
+from django.core.management.utils import get_random_secret_key
+
+env = Env()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -20,12 +24,15 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/4.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-(p-^*($&%+_+&hp7wueo6#6i3i#dcv-!+%y)vex#1=&quna38u'
+SECRET_KEY = env.str('SECRET_KEY', get_random_secret_key())
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = env.bool('DEBUG', True)
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [
+    allowed_host.strip()
+    for allowed_host in env.str("ALLOWED_HOSTS", default='localhost').split(',')
+]
 
 
 # Application definition
@@ -37,6 +44,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+
+    'rest_framework',
 ]
 
 MIDDLEWARE = [
@@ -73,10 +82,18 @@ WSGI_APPLICATION = 'notifier.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/4.1/ref/settings/#databases
 
+IDLE_IN_TRANSACTION_SESSION_TIMEOUT = env.int('IDLE_IN_TRANSACTION_SESSION_TIMEOUT', default=300000)
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': env.str('DB_NAME', default='pass_obj'),
+        'USER': env.str('DB_USER', default='postgres'),
+        'PASSWORD': env.str('DB_PASSWORD'),
+        'HOST': env.str('DB_HOST', default='postgres'),
+        'PORT': env.int('DB_PORT', default=5432),
+        'OPTIONS': {
+            'options': f'-c idle_in_transaction_session_timeout={IDLE_IN_TRANSACTION_SESSION_TIMEOUT}',
+        }
     }
 }
 
@@ -105,7 +122,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Asia/Novosibirsk'
 
 USE_I18N = True
 

@@ -1,0 +1,73 @@
+version: '3.11'
+
+services:
+
+  postgres:
+    image: 'postgres:15'
+    ports:
+      - '5434:5432'
+    env_file:
+      - .env
+    environment:
+      - POSTGRES_DB=${DB_NAME}
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+      - PGDATA=/var/lib/postgresql/data/pgdata
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+
+  redis:
+    image: 'redis:7.0.8'
+    ports:
+      - '6379:6379'
+
+  app:
+     build:
+       dockerfile: ./docker/app/Dockerfile
+       context: .
+     working_dir: /app/notifier/
+     command: /app/docker/app/cmd_app.sh
+     ports:
+      - "${APP_PORT}:80"
+     env_file:
+       - .env
+     restart: on-failure
+     volumes:
+       - static_volume:/app/static
+     depends_on:
+       - postgres
+       - redis
+
+#  cron:
+#    build:
+#      dockerfile: ./docker/app/cron.Dockerfile
+#      context: .
+#    working_dir: /app/uchet/
+#    env_file:
+#      - .env
+#    restart: on-failure
+#    depends_on:
+#      - postgres
+#      - redis
+#
+#  cron_worker:
+#    build:
+#      dockerfile: ./docker/app/worker.Dockerfile
+#      context: .
+#    working_dir: /app/uchet/
+#    env_file:
+#      - .env
+#    restart: on-failure
+#    depends_on:
+#      - postgres
+#      - redis
+
+
+
+volumes:
+  postgres-data:
+  static_volume:
+
+
+networks:
+  default:
+
