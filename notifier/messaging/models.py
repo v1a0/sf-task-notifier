@@ -20,6 +20,9 @@ class MessagingEvent(models.Model):
     text = models.CharField(null=False, blank=False, max_length=512)
     is_active = models.BooleanField(null=False, default=True)
 
+    # relations
+    scheduled_messages: None    # ScheduledMessage
+
     default_title = "Рассылка"
 
     class Meta:
@@ -62,7 +65,7 @@ class MessageStatus(models.IntegerChoices):
 
 class ScheduledMessage(models.Model):
     event = models.ForeignKey(MessagingEvent, on_delete=models.CASCADE, null=False, related_name='scheduled_messages')
-    addressee = models.ForeignKey(Addressee, on_delete=models.CASCADE, null=False)
+    addressee = models.ForeignKey(Addressee, on_delete=models.CASCADE, null=False, related_name='scheduled_messages')
     is_active = models.BooleanField(null=False, db_index=True)
     created_at = models.DateTimeField(null=False, blank=False, auto_now_add=True)
     updated_at = models.DateTimeField(null=False, blank=False, auto_now=True)

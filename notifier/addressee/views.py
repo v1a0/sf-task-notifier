@@ -1,6 +1,5 @@
 from rest_framework import generics
 from addressee.serializers import AddresseeSerializer, AddresseeRetrieveSerializer
-from rest_framework.response import Response
 import rest_framework.status as drf_statuses
 from drf_yasg.utils import swagger_auto_schema
 
@@ -16,7 +15,7 @@ class AddresseeCreateView(DefaultGenericCreateView):
     @swagger_auto_schema(
         operation_description='Create user Addressee',
         responses={
-            drf_statuses.HTTP_201_CREATED: AddresseeRetrieveSerializer()
+            drf_statuses.HTTP_201_CREATED: retrieve_serializer_class()
         }
     )
     def post(self, request, *args, **kwargs):
@@ -28,9 +27,9 @@ class AddresseesListView(generics.ListAPIView):
     serializer_class = AddresseeRetrieveSerializer
 
     @swagger_auto_schema(
-        operation_description="Get all Addressee",
+        operation_description="Get all Addressees",
         responses={
-            drf_statuses.HTTP_200_OK: AddresseeRetrieveSerializer(many=True)
+            drf_statuses.HTTP_200_OK: serializer_class(many=True)
         }
     )
     def list(self, request, *args, **kwargs):
@@ -43,14 +42,23 @@ class AddresseeRetrieveUpdateDestroyView(DefaultRetrieveUpdateDestroyView):
     update_serializer_class = AddresseeSerializer
 
     @swagger_auto_schema(
+        operation_description="Get Addressee",
+        responses={
+            drf_statuses.HTTP_200_OK: retrieve_serializer_class()
+        }
+    )
+    def get(self, request, *args, **kwargs):
+        return super().get(request, *args, **kwargs)
+
+    @swagger_auto_schema(
         operation_description="Update Addressee",
         responses={
             drf_statuses.HTTP_200_OK: retrieve_serializer_class()
         }
     )
     def update(self, request, *args, **kwargs):
-        return super().update(request, *args, **kwargs)\
-    
+        return super().update(request, *args, **kwargs)
+
 
     @swagger_auto_schema(
         operation_description="Delete Addressee",

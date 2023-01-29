@@ -23,7 +23,7 @@ class StatisticSerializer(serializers.Serializer):
     unknown = serializers.IntegerField()
 
 
-class MessagingEventCreateSerializer(serializers.Serializer):
+class MessagingEventSerializer(serializers.Serializer):
     title = serializers.CharField(required=False, max_length=255, default=None)
     text = serializers.CharField(required=True)
     send_to = SendToFieldSerializer(required=True)
@@ -36,22 +36,12 @@ class MessagingEventCreateSerializer(serializers.Serializer):
         for code in data['send_to']['codes']:
             code: str
             if not code.isdigit():
-                raise serializers.ValidationError(f"Invalid operator code '{code}' ")
+                raise serializers.ValidationError(f"""Invalid operator code '{code}'. Example "090\"""")
 
         return data
 
-    def create(self, validated_data):
-
-        messaging_event = MessagingEvent(
-            title=validated_data['title'],
-            start_at=validated_data['start_at'],
-            stop_at=validated_data['stop_at'],
-            text=validated_data['text']
-        )
-
-        send_to_tags = validated_data['send_to']['tags']
-        send_to_codes = [int(code) for code in validated_data['send_to']['codes']]
-
+    @staticmethod
+    def schedule_messages_for_event(messaging_event, send_to_tags, send_to_codes):
         matched_addressees = Addressee.objects.filter(
             Q(tags__title__in=send_to_tags) | Q(operator_code__in=send_to_codes)
         )
@@ -59,6 +49,9 @@ class MessagingEventCreateSerializer(serializers.Serializer):
 
         with transaction.atomic():
             messaging_event.save()
+
+            if messaging_event.scheduled_messages:
+                messaging_event.scheduled_messages.filter(status__lt=300).delete()
 
             for addressee in matched_addressees:
                 scheduled_messages.append(
@@ -73,8 +66,35 @@ class MessagingEventCreateSerializer(serializers.Serializer):
 
         return messaging_event
 
+    def create(self, validated_data):
+        messaging_event = MessagingEvent(
+            title=validated_data['title'],
+            start_at=validated_data['start_at'],
+            stop_at=validated_data['stop_at'],
+            text=validated_data['text']
+        )
 
-class MessagingEventSerializer(serializers.ModelSerializer):
+        messaging_event = self.schedule_messages_for_event(
+            messaging_event=messaging_event,
+            send_to_tags=validated_data['send_to']['tags'],
+            send_to_codes = [int(code) for code in validated_data['send_to']['codes']]
+        )
+
+        return messaging_event
+
+    def update(self, instance, validated_data):
+        messaging_event = instance
+
+        messaging_event = self.schedule_messages_for_event(
+            messaging_event=messaging_event,
+            send_to_tags=validated_data['send_to']['tags'],
+            send_to_codes=[int(code) for code in validated_data['send_to']['codes']]
+        )
+
+        return messaging_event
+
+
+class MessagingEventRetrieveSerializer(serializers.ModelSerializer):
     statistic = serializers.SerializerMethodField()
 
     class Meta:
