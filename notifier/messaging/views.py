@@ -5,6 +5,7 @@ import rest_framework.status as drf_statuses
 from drf_yasg.utils import swagger_auto_schema
 
 from addressee.models import Addressee
+from messaging.models import ActiveMessages
 
 from misc.views import DefaultGenericCreateView
 

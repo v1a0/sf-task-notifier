@@ -150,8 +150,11 @@ REST_FRAMEWORK = {
 
 # ====================
 REDIS_HOST = env.str('REDIS_HOST', 'redis')
-REDIS_PORT = env.str('REDIS_PORT', 6379)
+REDIS_PORT = env.int('REDIS_PORT', 6379)
 
 REDIS_BASE_URL = f"redis://{REDIS_HOST}:{REDIS_PORT}"
 CELERY_BROKER_URL = f"{REDIS_BASE_URL}/0"
 CELERY_RESULT_BACKEND = f"{REDIS_BASE_URL}/1"
+
+# ===========
+FBRQ_TOKEN = env.str('FBRQ_TOKEN')

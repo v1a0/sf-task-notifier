@@ -54,10 +54,10 @@ class MessagingEvent(models.Model):
 
 class MessageStatus(models.IntegerChoices):
     SCHEDULED = (100, 'scheduled')
-    DONE = (200, 'done')
-    RESERVED = (300, 'processing')
-    FAILED = (400, 'failed')
-    UNKNOWN = (500, 'unknown')
+    FAILED = (200, 'failed')
+    PROCESSING = (300, 'processing')
+    SUCCESS = (400, 'success')
+    BLOCKED = (500, 'blocked')
 
 
 class ScheduledMessage(models.Model):
@@ -67,3 +67,76 @@ class ScheduledMessage(models.Model):
     created_at = models.DateTimeField(null=False, blank=False, auto_now_add=True)
     updated_at = models.DateTimeField(null=False, blank=False, auto_now=True)
     status = models.IntegerField(null=False, choices=MessageStatus.choices, default=MessageStatus.SCHEDULED)
+    updated_by_task = models.UUIDField(null=True, blank=False, default=None)
+
+
+# class MessagesViewMixin:
+#     event = models.ForeignKey(MessagingEvent, on_delete=models.DO_NOTHING)
+#     message = models.ForeignKey(ScheduledMessage, on_delete=models.DO_NOTHING)
+#     addressee = models.ForeignKey(Addressee, on_delete=models.DO_NOTHING)
+#
+#     event_title = models.CharField(max_length=512)
+#     stop_at = models.DateTimeField(null=True, default=None)
+#     text = models.CharField(max_length=512)
+#     status = models.IntegerField(null=False, choices=MessageStatus.choices, default=MessageStatus.SCHEDULED)
+#     phone_number = models.BigIntegerField()
+#
+#     updated_by_task = models.UUIDField(null=True, default=None)
+#
+#     class Meta:
+#         abstract = True
+#         managed = False
+#         db_table = 'processing_messages'
+
+
+class ProcessingMessages(models.Model):
+    event = models.ForeignKey(MessagingEvent, on_delete=models.DO_NOTHING)
+    message = models.ForeignKey(ScheduledMessage, on_delete=models.DO_NOTHING)
+    addressee = models.ForeignKey(Addressee, on_delete=models.DO_NOTHING)
+
+    event_title = models.CharField(max_length=512)
+    stop_at = models.DateTimeField(null=True, default=None)
+    text = models.CharField(max_length=512)
+    status = models.IntegerField(null=False, choices=MessageStatus.choices, default=MessageStatus.SCHEDULED)
+    phone_number = models.BigIntegerField()
+
+    updated_by_task = models.UUIDField(null=True, default=None, db_index=True)
+
+    class Meta:
+        abstract = False
+        managed = False
+        db_table = 'processing_messages'
+
+
+class ActiveMessages(models.Model):
+    event = models.ForeignKey(MessagingEvent, on_delete=models.DO_NOTHING)
+    message = models.ForeignKey(ScheduledMessage, on_delete=models.DO_NOTHING)
+    addressee = models.ForeignKey(Addressee, on_delete=models.DO_NOTHING)
+
+    event_title = models.CharField(max_length=512)
+    stop_at = models.DateTimeField(null=True, default=None)
+    text = models.CharField(max_length=512)
+    status = models.IntegerField(null=False, choices=MessageStatus.choices, default=MessageStatus.SCHEDULED)
+    phone_number = models.BigIntegerField()
+
+    updated_by_task = models.UUIDField(null=True, default=None)
+
+    class Meta:
+        abstract = False
+        managed = False
+        db_table = 'active_messages'
+
+    @classmethod
+    def get_and_reserve(cls, limit: int, task_id: str):
+        ScheduledMessage.objects.filter(
+            id__in=cls.objects.all()[:limit].values('message_id')
+        ).update(
+            status=MessageStatus.PROCESSING,
+            updated_by_task=task_id
+        )
+
+        return ProcessingMessages.objects.filter(
+            status=MessageStatus.PROCESSING,
+            updated_by_task=task_id
+        )
+
