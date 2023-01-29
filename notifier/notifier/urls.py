@@ -19,5 +19,6 @@ from django.urls import path
 
 urlpatterns = [
     # API
-    path('api/users/', include('users.urls')),
+    path('api/addressees/', include('addressee.urls')),
+    # path('api/messaging/', include('messaging.urls')),
 ]

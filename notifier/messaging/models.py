@@ -1,6 +1,7 @@
 from django.db import models
+from django.contrib.postgres.indexes import GinIndex
 
-from users.models import User
+from addressee.models import Addressee
 
 
 # Event
@@ -15,7 +16,12 @@ class ScheduledEvent(models.Model):
     type = models.IntegerField(null=False, choices=ScheduledEventType.choices, default=ScheduledEventType.ONCE)
     date = models.DateField(null=True, blank=False)
     time = models.TimeField(null=False, blank=False)
+    stop_at = models.DateTimeField(null=True, default=None)
+    text = models.CharField(null=False, blank=False, max_length=512)
     is_active = models.BooleanField(null=False, default=True)
+
+    class Meta:
+        indexes = [GinIndex(fields=['date', 'time']), GinIndex(fields=['stop_at'])]
 
 
 # Messaging
@@ -27,14 +33,9 @@ class MessagingStatus(models.IntegerChoices):
     FAILED = (400, 'failed')
 
 
-class MessagingSchedule(models.Model):
+class ScheduledMessage(models.Model):
     event = models.ForeignKey(ScheduledEvent, on_delete=models.CASCADE, null=False)
-    user = models.ForeignKey(User, on_delete=models.CASCADE, null=False)
+    addressee = models.ForeignKey(Addressee, on_delete=models.CASCADE, null=False)
     is_active = models.BooleanField(null=False, db_index=True)
-
-
-class MessagingScheduleLog(models.Model):
-    schedule = models.ForeignKey(MessagingSchedule, on_delete=models.CASCADE, db_index=True)
-    status = models.IntegerField(null=False, choices=MessagingStatus.choices, default=MessagingStatus.UNKNOWN)
     created_at = models.DateTimeField(null=False, blank=False, auto_now_add=True)
     updated_at = models.DateTimeField(null=False, blank=False, auto_now=True)

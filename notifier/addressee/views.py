@@ -1,22 +1,22 @@
 from rest_framework import generics
-from users.serializers import UserCreateSerializer, UserRetrieveSerializer
+from addressee.serializers import AddresseeSerializer, AddresseeRetrieveSerializer
 from rest_framework.response import Response
 import rest_framework.status as drf_statuses
 from drf_yasg.utils import swagger_auto_schema
 
-from users.models import User
+from addressee.models import Addressee
 
 
-class UserCreateView(generics.CreateAPIView):
+class AddresseeCreateView(generics.CreateAPIView):
     # authentication_classes = [TokenAuthentication]
 
-    serializer_class = UserCreateSerializer
-    response_serializer_class = UserRetrieveSerializer
+    serializer_class = AddresseeSerializer
+    response_serializer_class = AddresseeRetrieveSerializer
 
     @swagger_auto_schema(
         operation_description='Create user',
         responses={
-            201: UserRetrieveSerializer()
+            201: AddresseeRetrieveSerializer()
         }
     )
     def post(self, request, *args, **kwargs):
@@ -33,7 +33,7 @@ class UserCreateView(generics.CreateAPIView):
         )
 
 
-class UsersListView(generics.ListAPIView):
-    queryset = User.objects.all()
-    serializer_class = UserRetrieveSerializer
+class AddresseesListView(generics.ListAPIView):
+    queryset = Addressee.objects.all()
+    serializer_class = AddresseeRetrieveSerializer
     # permission_classes = [IsAdminUser]
