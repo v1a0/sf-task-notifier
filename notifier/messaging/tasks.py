@@ -8,7 +8,7 @@ from django.conf import settings
 
 
 @app.task(bind=True)
-def messages_sending_cron(self):
+def messages_sending(self):
     task_id = self.request.id
     data = ActiveMessages.get_and_reserve(task_id=task_id)
     service = FbRQ(token=settings.FBRQ_TOKEN)
