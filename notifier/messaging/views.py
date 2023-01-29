@@ -12,7 +12,7 @@ from misc.views import DefaultGenericCreateView
 
 class MessagingEventCreateView(DefaultGenericCreateView):
     serializer_class = MessagingEventCreateSerializer
-    response_serializer_class = MessagingEventSerializer
+    retrieve_serializer_class = MessagingEventSerializer
 
     @swagger_auto_schema(
         operation_description='Create messaging event',

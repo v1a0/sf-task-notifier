@@ -6,7 +6,6 @@ from rest_framework import serializers
 from drf_yasg.utils import swagger_serializer_method
 
 from addressee.models import Addressee, AddresseeTag
-import misc.regexes as reg
 
 from messaging.models import MessagingEvent, ScheduledMessage, MessageStatus
 

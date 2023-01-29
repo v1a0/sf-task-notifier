@@ -29,5 +29,5 @@ class Addressee(models.Model):
     def save(
         self, force_insert=False, force_update=False, using=None, update_fields=None
     ):
-        self.operator_code = self.phone_number[1:4]
+        self.operator_code = int(str(self.phone_number)[1:4])
         super().save(force_insert=force_insert, force_update=force_update, using=using, update_fields=update_fields)
