@@ -118,10 +118,6 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-REST_FRAMEWORK = {
-    'DATETIME_FORMAT': "%Y-%m-%dT%H:%M:%S.%fZ",
-}
-
 
 # Internationalization
 # https://docs.djangoproject.com/en/4.1/topics/i18n/
@@ -144,3 +140,18 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/4.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+
+# ====================
+
+REST_FRAMEWORK = {
+    'DATETIME_FORMAT': "%Y-%m-%dT%H:%M:%S.%fZ",
+}
+
+# ====================
+REDIS_HOST = env.str('REDIS_HOST', 'redis')
+REDIS_PORT = env.str('REDIS_PORT', 6379)
+
+REDIS_BASE_URL = f"redis://{REDIS_HOST}:{REDIS_PORT}"
+CELERY_BROKER_URL = f"{REDIS_BASE_URL}/0"
+CELERY_RESULT_BACKEND = f"{REDIS_BASE_URL}/1"

@@ -74,9 +74,6 @@ class MessagingEventCreateSerializer(serializers.Serializer):
 
         return messaging_event
 
-    def update(self, instance, validated_data):
-        pass
-
 
 class MessagingEventSerializer(serializers.ModelSerializer):
     statistic = serializers.SerializerMethodField()
