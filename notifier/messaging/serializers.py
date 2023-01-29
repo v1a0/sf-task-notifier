@@ -1,18 +1,18 @@
-from django.db import transaction
-from django.db.models import Q
-
-from rest_framework.validators import UniqueValidator
+from django.utils.timezone import now
 from rest_framework import serializers
 from drf_yasg.utils import swagger_serializer_method
 
-from addressee.models import Addressee, AddresseeTag
+from django.db import transaction
+from django.db.models import Q
 
-from messaging.models import MessagingEvent, ScheduledMessage, MessageStatus
+from addressee.models import Addressee
+
+from messaging.models import MessagingEvent, ScheduledMessage
 
 
 class SendToFieldSerializer(serializers.Serializer):
-    tags = serializers.ListField(child=serializers.CharField(), required=True, allow_empty=True)
-    codes = serializers.ListField(child=serializers.CharField(), required=True, allow_empty=True)
+    tags = serializers.ListField(child=serializers.CharField(), required=True, allow_empty=True, help_text='User tags')
+    codes = serializers.ListField(child=serializers.CharField(), required=True, allow_empty=True, help_text='Operator code')
 
 
 class StatisticSerializer(serializers.Serializer):
@@ -35,8 +35,14 @@ class MessagingEventSerializer(serializers.Serializer):
 
         for code in data['send_to']['codes']:
             code: str
-            if not code.isdigit():
-                raise serializers.ValidationError(f"""Invalid operator code '{code}'. Example "090\"""")
+            if not code.isdigit() or len(code) != 3:
+                raise serializers.ValidationError(f"Invalid operator code '{code}'. Example: '090'")
+
+        if data['start_at'] > data['stop_at']:
+            raise serializers.ValidationError(f"Logic issue. Value of 'start_at' should not be greater than 'stop_at'")
+
+        if data['start_at'] < now():
+            raise serializers.ValidationError(f"Value of 'start_at' should be greater than present date/time")
 
         return data
 
@@ -57,8 +63,7 @@ class MessagingEventSerializer(serializers.Serializer):
                 scheduled_messages.append(
                     ScheduledMessage(
                         event=messaging_event,
-                        addressee=addressee,
-                        is_active=True,
+                        addressee=addressee
                     )
                 )
 
@@ -71,7 +76,8 @@ class MessagingEventSerializer(serializers.Serializer):
             title=validated_data['title'],
             start_at=validated_data['start_at'],
             stop_at=validated_data['stop_at'],
-            text=validated_data['text']
+            text=validated_data['text'],
+            settings=validated_data['send_to']
         )
 
         messaging_event = self.schedule_messages_for_event(
@@ -84,6 +90,11 @@ class MessagingEventSerializer(serializers.Serializer):
 
     def update(self, instance, validated_data):
         messaging_event = instance
+        messaging_event.title = validated_data['title']
+        messaging_event.start_at = validated_data['start_at']
+        messaging_event.stop_at = validated_data['stop_at']
+        messaging_event.text = validated_data['text']
+        messaging_event.settings = validated_data['send_to']
 
         messaging_event = self.schedule_messages_for_event(
             messaging_event=messaging_event,
@@ -102,11 +113,10 @@ class MessagingEventRetrieveSerializer(serializers.ModelSerializer):
         fields = [
             "id",
             "title",
-            "type",
             "start_at",
             "stop_at",
             "text",
-            "is_active",
+            "settings",
             "statistic",
         ]
         depth = 1

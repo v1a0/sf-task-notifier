@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from django.db import models
 from django.utils.crypto import get_random_string
 from django.db.models import Count
@@ -7,18 +9,12 @@ from addressee.models import Addressee
 
 # Event
 
-class MessagingEventType(models.IntegerChoices):
-    REGULAR = (0, 'regular')
-    ONCE = (1, 'once')
-
-
 class MessagingEvent(models.Model):
     title = models.CharField(null=False, blank=False, max_length=512)
-    type = models.IntegerField(null=False, choices=MessagingEventType.choices, default=MessagingEventType.ONCE)
     start_at = models.DateTimeField(null=True, blank=False)
     stop_at = models.DateTimeField(null=True, default=None)
     text = models.CharField(null=False, blank=False, max_length=512)
-    is_active = models.BooleanField(null=False, default=True)
+    settings = models.JSONField(null=False, default=dict)
 
     # relations
     scheduled_messages: None    # ScheduledMessage
@@ -27,6 +23,12 @@ class MessagingEvent(models.Model):
 
     class Meta:
         indexes = [models.Index(fields=['start_at', 'stop_at'])]
+
+    @property
+    def is_active(self):
+        if not self.stop_at:
+            return False
+        return datetime.now() > self.stop_at
 
     def count_scheduled_messages(self):
         return self.scheduled_messages.all().count()
@@ -66,12 +68,10 @@ class MessageStatus(models.IntegerChoices):
 class ScheduledMessage(models.Model):
     event = models.ForeignKey(MessagingEvent, on_delete=models.CASCADE, null=False, related_name='scheduled_messages')
     addressee = models.ForeignKey(Addressee, on_delete=models.CASCADE, null=False, related_name='scheduled_messages')
-    is_active = models.BooleanField(null=False, db_index=True)
     created_at = models.DateTimeField(null=False, blank=False, auto_now_add=True)
     updated_at = models.DateTimeField(null=False, blank=False, auto_now=True)
     status = models.IntegerField(null=False, choices=MessageStatus.choices, default=MessageStatus.SCHEDULED)
     updated_by_task = models.UUIDField(null=True, blank=False, default=None)
-
 
 # class MessagesViewMixin:
 #     event = models.ForeignKey(MessagingEvent, on_delete=models.DO_NOTHING)

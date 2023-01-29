@@ -32,10 +32,9 @@ class Migration(migrations.Migration):
                 INNER JOIN messaging_scheduledmessage msg on event.id = msg.event_id
                 LEFT JOIN addressee_addressee adr on msg.addressee_id = adr.id
                 WHERE (
-                    event.is_active
+                    msg.status < 300
                     AND (event.start_at <= now())
                     AND (event.stop_at > now())
-                    AND (msg.status < 300)
                 )
                 ORDER BY msg.status desc, event.id
             )
