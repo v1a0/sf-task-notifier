@@ -1,7 +1,7 @@
 import requests
-from rest_framework.status import HTTP_200_OK, HTTP_408_REQUEST_TIMEOUT, HTTP_429_TOO_MANY_REQUESTS
+from rest_framework.status import HTTP_408_REQUEST_TIMEOUT, HTTP_429_TOO_MANY_REQUESTS
 
-UNKNOWN_STATUS = 0
+UNKNOWN_STATUS = -1
 
 
 class FbRQ:
@@ -11,18 +11,19 @@ class FbRQ:
         if domain is None:
             domain = "probe.fbrq.cloud"
         if version is None:
-            version = "v1"
+            version = 1
 
         self.__token = token
-        self.base_url = f"{protocol}://{domain}/{version}"
+        self.base_url = f"{protocol}://{domain}/v{version}"
 
     @property
     def headers(self):
         return {"Authorization": f"Bearer {self.__token}"}
 
-    def send_message(self, id: int, phone: int, text: str):
+    def send_message(self, id: int, phone: int, text: str) -> int:
         try:
-            r = requests.post(
+            print(self.headers)
+            response = requests.post(
                 url=f"{self.base_url}/send/{id}",
                 json={
                   "id": id,
@@ -37,6 +38,6 @@ class FbRQ:
             return HTTP_429_TOO_MANY_REQUESTS
         except requests.exceptions.RequestException:
             return UNKNOWN_STATUS
-        finally:
-            return HTTP_200_OK
+
+        return response.status_code
 

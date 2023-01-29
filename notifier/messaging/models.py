@@ -127,9 +127,10 @@ class ActiveMessages(models.Model):
         db_table = 'active_messages'
 
     @classmethod
-    def get_and_reserve(cls, limit: int, task_id: str):
+    def get_and_reserve(cls, task_id: str, limit: int = None):
         ScheduledMessage.objects.filter(
-            id__in=cls.objects.all()[:limit].values('message_id')
+            id__in=cls.objects.all().values('message_id')
+            # id__in=cls.objects.all()[:limit].values('message_id')
         ).update(
             status=MessageStatus.PROCESSING,
             updated_by_task=task_id
