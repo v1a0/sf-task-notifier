@@ -1,6 +1,7 @@
 from django.db import transaction
 from rest_framework.validators import UniqueValidator
 from rest_framework import serializers
+from drf_yasg.utils import swagger_serializer_method
 
 from addressee.models import Addressee, AddresseeTag
 import misc.regexes as reg
@@ -80,7 +81,7 @@ class AddresseeRetrieveSerializer(serializers.ModelSerializer):
         ]
         depth = 1
 
-    @staticmethod
+    @swagger_serializer_method(serializer_or_field=serializers.CharField(read_only=True))
     def get_operator_code(obj):
         return f'{str(obj.operator_code):0>3}'  # appending zeros at left side up to len == 3
 

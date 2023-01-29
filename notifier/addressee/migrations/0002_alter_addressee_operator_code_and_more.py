@@ -19,6 +19,6 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='addressee',
             name='phone_number',
-            field=models.IntegerField(error_messages={'invalid': 'Invalid phone format. Example: 79998887766'}, unique=True, validators=[django.core.validators.MinValueValidator(70000000000), django.core.validators.MaxValueValidator(79999999999)]),
+            field=models.BigIntegerField(error_messages={'invalid': 'Invalid phone format. Example: 79998887766'}, unique=True, validators=[django.core.validators.MinValueValidator(70000000000), django.core.validators.MaxValueValidator(79999999999)]),
         ),
     ]

@@ -11,7 +11,7 @@ class AddresseeTag(models.Model):
 
 class Addressee(models.Model):
     name = models.CharField(null=True, blank=False, max_length=255, default=None)
-    phone_number = models.IntegerField(
+    phone_number = models.BigIntegerField(
         null=False, blank=False,
         validators=[MinValueValidator(70000000000), MaxValueValidator(79999999999)],
         error_messages=MSG.ERROR.PHONE,
@@ -30,4 +30,4 @@ class Addressee(models.Model):
         self, force_insert=False, force_update=False, using=None, update_fields=None
     ):
         self.operator_code = self.phone_number[1:4]
-        super().save(force_insert=False, force_update=False, using=None, update_fields=None)
+        super().save(force_insert=force_insert, force_update=force_update, using=using, update_fields=update_fields)

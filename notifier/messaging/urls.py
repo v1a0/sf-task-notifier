@@ -1,8 +1,8 @@
 from django.urls import path
 
-# from addressee.views import AddresseeCreateView, AddresseesListView
-#
-# urlpatterns = [
-#     path('', AddresseeCreateView.as_view(), name='users_create'),
-#     path('all/', AddresseesListView.as_view(), name='users_list_all'),
-# ]
+from messaging.views import MessagingEventCreateView
+
+urlpatterns = [
+    path('', MessagingEventCreateView.as_view(), name='messaging_event_create'),
+    # path('all/', AddresseesListView.as_view(), name='users_list_all'),
+]
