@@ -9,11 +9,21 @@ from addressee.models import Addressee
 
 # Event
 
+class MessageText(models.Model):
+    text = models.CharField(null=False, blank=False, max_length=512)
+
+    def delete(self, using=None, keep_parents=False):
+        pass
+
+    def __str__(self):
+        return self.text
+
+
 class MessagingEvent(models.Model):
     title = models.CharField(null=False, blank=False, max_length=512)
     start_at = models.DateTimeField(null=True, blank=False)
     stop_at = models.DateTimeField(null=True, default=None)
-    text = models.CharField(null=False, blank=False, max_length=512)
+    text_col = models.ForeignKey(MessageText, null=True, on_delete=models.SET_NULL, db_column="text_id")
     settings = models.JSONField(null=False, default=dict)
 
     # relations
@@ -29,6 +39,22 @@ class MessagingEvent(models.Model):
         if not self.stop_at:
             return False
         return datetime.now() > self.stop_at
+
+    @property
+    def text(self) -> str:
+        return str(self.text_col)
+
+    @text.setter
+    def text(self, value):
+        msg_txt = MessageText.objects.filter(text=value)
+
+        if not msg_txt.exists():
+            msg_txt = MessageText(text=value)
+            msg_txt.save()
+        else:
+            msg_txt = msg_txt.first()
+
+        self.text_col = msg_txt
 
     def count_scheduled_messages(self):
         return self.scheduled_messages.all().count()
@@ -72,8 +98,10 @@ class ScheduledMessage(models.Model):
     updated_at = models.DateTimeField(null=False, blank=False, auto_now=True)
     status = models.IntegerField(null=False, choices=MessageStatus.choices, default=MessageStatus.SCHEDULED)
     updated_by_task = models.UUIDField(null=True, blank=False, default=None)
+    sent_with_text = models.ForeignKey(MessageText, null=True, default=None, on_delete=models.SET_NULL)
 
-# class MessagesViewMixin:
+
+# class MessagesViewMixin(models.Model):
 #     event = models.ForeignKey(MessagingEvent, on_delete=models.DO_NOTHING)
 #     message = models.ForeignKey(ScheduledMessage, on_delete=models.DO_NOTHING)
 #     addressee = models.ForeignKey(Addressee, on_delete=models.DO_NOTHING)
@@ -88,8 +116,6 @@ class ScheduledMessage(models.Model):
 #
 #     class Meta:
 #         abstract = True
-#         managed = False
-#         db_table = 'processing_messages'
 
 
 class ProcessingMessages(models.Model):
@@ -103,7 +129,7 @@ class ProcessingMessages(models.Model):
     status = models.IntegerField(null=False, choices=MessageStatus.choices, default=MessageStatus.SCHEDULED)
     phone_number = models.BigIntegerField()
 
-    updated_by_task = models.UUIDField(null=True, default=None, db_index=True)
+    updated_by_task = models.UUIDField(null=True, default=None)
 
     class Meta:
         abstract = False

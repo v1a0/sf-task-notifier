@@ -83,7 +83,7 @@ class MessagingEventSerializer(serializers.Serializer):
         messaging_event = self.schedule_messages_for_event(
             messaging_event=messaging_event,
             send_to_tags=validated_data['send_to']['tags'],
-            send_to_codes = [int(code) for code in validated_data['send_to']['codes']]
+            send_to_codes=[int(code) for code in validated_data['send_to']['codes']]
         )
 
         return messaging_event

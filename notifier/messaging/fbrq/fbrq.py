@@ -22,7 +22,6 @@ class FbRQ:
 
     def send_message(self, id: int, phone: int, text: str) -> int:
         try:
-            print(self.headers)
             response = requests.post(
                 url=f"{self.base_url}/send/{id}",
                 json={
