@@ -122,10 +122,11 @@ class ProcessingMessages(models.Model):
     event = models.ForeignKey(MessagingEvent, on_delete=models.DO_NOTHING)
     message = models.ForeignKey(ScheduledMessage, on_delete=models.DO_NOTHING)
     addressee = models.ForeignKey(Addressee, on_delete=models.DO_NOTHING)
+    text = models.ForeignKey(MessageText, on_delete=models.DO_NOTHING)
 
     event_title = models.CharField(max_length=512)
     stop_at = models.DateTimeField(null=True, default=None)
-    text = models.CharField(max_length=512)
+    text_value = models.CharField(max_length=512)
     status = models.IntegerField(null=False, choices=MessageStatus.choices, default=MessageStatus.SCHEDULED)
     phone_number = models.BigIntegerField()
 
@@ -141,10 +142,11 @@ class ActiveMessages(models.Model):
     event = models.ForeignKey(MessagingEvent, on_delete=models.DO_NOTHING)
     message = models.ForeignKey(ScheduledMessage, on_delete=models.DO_NOTHING)
     addressee = models.ForeignKey(Addressee, on_delete=models.DO_NOTHING)
+    text = models.ForeignKey(MessageText, on_delete=models.DO_NOTHING)
 
     event_title = models.CharField(max_length=512)
     stop_at = models.DateTimeField(null=True, default=None)
-    text = models.CharField(max_length=512)
+    text_value = models.CharField(max_length=512)
     status = models.IntegerField(null=False, choices=MessageStatus.choices, default=MessageStatus.SCHEDULED)
     phone_number = models.BigIntegerField()
 
