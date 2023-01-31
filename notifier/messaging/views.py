@@ -12,6 +12,8 @@ class MessagingEventCreateView(DefaultGenericCreateView):
     serializer_class = MessagingEventSerializer
     retrieve_serializer_class = MessagingEventRetrieveSerializer
 
+    http_method_names = ['options', 'post']
+
     @swagger_auto_schema(
         operation_description='Create messaging event',
         responses={
@@ -25,6 +27,8 @@ class MessagingEventCreateView(DefaultGenericCreateView):
 class MessagingEventListView(generics.ListAPIView):
     queryset = MessagingEvent.objects.all()
     serializer_class = MessagingEventRetrieveSerializer
+
+    http_method_names = ['get', 'options']
 
     @swagger_auto_schema(
         operation_description="Get all MessagingEvents",
@@ -40,6 +44,8 @@ class MessagingEventRetrieveUpdateDestroyView(DefaultRetrieveUpdateDestroyView):
     queryset = MessagingEvent.objects.all()
     retrieve_serializer_class = MessagingEventRetrieveSerializer
     update_serializer_class = MessagingEventSerializer
+
+    http_method_names = ['get', 'options', 'put', 'delete']
 
     @swagger_auto_schema(
         operation_description="Get MessagingEvent",
@@ -59,7 +65,6 @@ class MessagingEventRetrieveUpdateDestroyView(DefaultRetrieveUpdateDestroyView):
     def update(self, request, *args, **kwargs):
         return super().update(request, *args, **kwargs)
 
-
     @swagger_auto_schema(
         operation_description="Delete MessagingEvent",
         responses={
@@ -74,8 +79,10 @@ class MessagingEventStatisticRetrieveView(DefaultRetrieveUpdateDestroyView):
     queryset = MessagingEvent.objects.all()
     retrieve_serializer_class = MessagingEventStatisticRetrieveSerializer
 
+    http_method_names = ['get', 'options']
+
     @swagger_auto_schema(
-        operation_description="Get MessagingEvent",
+        operation_description="Get MessagingEvent Statistic",
         responses={
             drf_statuses.HTTP_200_OK: retrieve_serializer_class()
         }

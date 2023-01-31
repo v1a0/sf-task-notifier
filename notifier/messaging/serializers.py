@@ -156,7 +156,7 @@ class MessagingEventStatisticRetrieveSerializer(MessagingEventRetrieveSerializer
         ]
         depth = 1
 
-    @swagger_serializer_method(serializer_or_field=MessageStatisticSerializer(read_only=True))
+    @swagger_serializer_method(serializer_or_field=MessagesStatisticSerializer(read_only=True))
     def get_messages(self, obj):
         obj: MessagingEvent
         messages: QuerySet[ScheduledMessage] = obj.scheduled_messages.prefetch_related('sent_with_text', 'addressee')

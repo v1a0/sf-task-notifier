@@ -1,4 +1,4 @@
-from datetime import datetime
+from django.utils.timezone import now
 
 from django.db import models
 from django.utils.crypto import get_random_string
@@ -38,7 +38,7 @@ class MessagingEvent(models.Model):
     def is_active(self):
         if not self.stop_at:
             return False
-        return datetime.now() > self.stop_at
+        return now() > self.stop_at
 
     @property
     def text(self) -> str:
@@ -101,6 +101,8 @@ class ScheduledMessage(models.Model):
     sent_with_text = models.ForeignKey(MessageText, null=True, default=None, on_delete=models.SET_NULL)
 
 
+# # TODO: have no idea why this mixin doesn't work well
+#
 # class MessagesViewMixin(models.Model):
 #     event = models.ForeignKey(MessagingEvent, on_delete=models.DO_NOTHING)
 #     message = models.ForeignKey(ScheduledMessage, on_delete=models.DO_NOTHING)

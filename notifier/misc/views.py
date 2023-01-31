@@ -8,6 +8,8 @@ class DefaultGenericCreateView(generics.CreateAPIView):
     serializer_class = None
     retrieve_serializer_class = None
 
+    # http_method_names = ['options', 'post']
+
     def post(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -26,7 +28,7 @@ class DefaultRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
     retrieve_serializer_class = None
     update_serializer_class = None
 
-    http_method_names = ['get', 'options', 'put', 'delete']
+    # http_method_names = ['get', 'options', 'put', 'delete']
 
     def get_serializer_class(self):
         if self.request.method == 'GET':

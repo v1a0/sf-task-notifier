@@ -12,6 +12,8 @@ class AddresseeCreateView(DefaultGenericCreateView):
     serializer_class = AddresseeSerializer
     retrieve_serializer_class = AddresseeRetrieveSerializer
 
+    http_method_names = ['options', 'post']
+
     @swagger_auto_schema(
         operation_description='Create user Addressee',
         responses={
@@ -25,6 +27,8 @@ class AddresseeCreateView(DefaultGenericCreateView):
 class AddresseesListView(generics.ListAPIView):
     queryset = Addressee.objects.all()
     serializer_class = AddresseeRetrieveSerializer
+
+    http_method_names = ['get', 'options']
 
     @swagger_auto_schema(
         operation_description="Get all Addressees",
@@ -40,6 +44,8 @@ class AddresseeRetrieveUpdateDestroyView(DefaultRetrieveUpdateDestroyView):
     queryset = Addressee.objects.all()
     retrieve_serializer_class = AddresseeRetrieveSerializer
     update_serializer_class = AddresseeSerializer
+
+    http_method_names = ['get', 'options', 'put', 'delete']
 
     @swagger_auto_schema(
         operation_description="Get Addressee",
