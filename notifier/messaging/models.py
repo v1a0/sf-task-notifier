@@ -166,11 +166,12 @@ class ActiveMessages(models.Model):
             # id__in=cls.objects.all()[:limit].values('message_id')
         ).update(
             status=MessageStatus.PROCESSING,
-            updated_by_task=task_id
+            updated_by_task=task_id,
+            updated_at=now()
         )
 
         return ProcessingMessages.objects.filter(
             status=MessageStatus.PROCESSING,
-            updated_by_task=task_id
+            updated_by_task=task_id,
         )
 

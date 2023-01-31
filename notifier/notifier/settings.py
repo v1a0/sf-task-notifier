@@ -19,7 +19,6 @@ env = Env()
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.1/howto/deployment/checklist/
 
@@ -33,7 +32,6 @@ ALLOWED_HOSTS = [
     allowed_host.strip()
     for allowed_host in env.str("ALLOWED_HOSTS", default='localhost').split(',')
 ]
-
 
 # Application definition
 
@@ -82,7 +80,6 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'notifier.wsgi.application'
 
-
 # Database
 # https://docs.djangoproject.com/en/4.1/ref/settings/#databases
 
@@ -100,7 +97,6 @@ DATABASES = {
         }
     }
 }
-
 
 # Password validation
 # https://docs.djangoproject.com/en/4.1/ref/settings/#auth-password-validators
@@ -120,7 +116,6 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-
 # Internationalization
 # https://docs.djangoproject.com/en/4.1/topics/i18n/
 
@@ -132,7 +127,6 @@ USE_I18N = True
 
 USE_TZ = True
 
-
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.1/howto/static-files/
 
@@ -142,7 +136,6 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/4.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
-
 
 # ====================
 
@@ -162,3 +155,12 @@ CELERY_RESULT_BACKEND = f"{REDIS_BASE_URL}/1"
 MESSAGING_SENDING_CRON_DELAY = env.int('MESSAGING_SENDING_CRON_DELAY', 60)
 FBRQ_API_TOKEN = env.str('FBRQ_API_TOKEN')
 
+# ===========
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.yandex.ru'
+EMAIL_USE_TLS = False
+EMAIL_USE_SSL = True
+EMAIL_PORT = env.int('EMAIL_PORT', 465)
+EMAIL_HOST_USER = env.str('EMAIL_HOST_USER', '(no email)')
+EMAIL_HOST_PASSWORD = env.str('EMAIL_HOST_PASSWORD', '(no password)')
+EMAIL_TO = env.str('EMAIL_TO', 'contact@v1a0.dev').split(',')
