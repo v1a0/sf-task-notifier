@@ -1,4 +1,5 @@
 from django.utils.timezone import now
+from django.db.models import QuerySet
 from rest_framework import serializers
 from drf_yasg.utils import swagger_serializer_method
 
@@ -7,7 +8,7 @@ from django.db.models import Q
 
 from addressee.models import Addressee
 
-from messaging.models import MessagingEvent, ScheduledMessage
+from messaging.models import MessagingEvent, ScheduledMessage, MessageStatus
 
 
 class SendToFieldSerializer(serializers.Serializer):
@@ -15,12 +16,26 @@ class SendToFieldSerializer(serializers.Serializer):
     codes = serializers.ListField(child=serializers.CharField(), required=True, allow_empty=True, help_text='Operator code')
 
 
-class StatisticSerializer(serializers.Serializer):
+class StatisticFieldSerializer(serializers.Serializer):
     scheduled = serializers.IntegerField()
-    done = serializers.IntegerField()
+    success = serializers.IntegerField()
     processing = serializers.IntegerField()
     failed = serializers.IntegerField()
-    unknown = serializers.IntegerField()
+    blocked = serializers.IntegerField()
+
+
+class MessageStatisticSerializer(serializers.Serializer):
+    id = serializers.IntegerField()
+    phone_number = serializers.IntegerField(source='addressee.phone_number')
+    text = serializers.CharField(source='sent_with_text.text', default=None)
+
+
+class MessagesStatisticSerializer(serializers.Serializer):
+    scheduled = MessageStatisticSerializer(many=True)
+    success = MessageStatisticSerializer(many=True)
+    processing = MessageStatisticSerializer(many=True)
+    failed = MessageStatisticSerializer(many=True)
+    blocked = MessageStatisticSerializer(many=True)
 
 
 class MessagingEventSerializer(serializers.Serializer):
@@ -121,10 +136,34 @@ class MessagingEventRetrieveSerializer(serializers.ModelSerializer):
         ]
         depth = 1
 
-    @swagger_serializer_method(serializer_or_field=StatisticSerializer(read_only=True))
+    @swagger_serializer_method(serializer_or_field=MessageStatisticSerializer(read_only=True))
     def get_statistic(self, obj):
         obj: MessagingEvent
         data = obj.get_statistic()
-        serializer = StatisticSerializer(data)
+        serializer = StatisticFieldSerializer(data)
 
         return serializer.instance
+
+
+class MessagingEventStatisticRetrieveSerializer(MessagingEventRetrieveSerializer):
+    messages = serializers.SerializerMethodField()
+
+    class Meta:
+        model = MessagingEvent
+        fields = [
+            "statistic",
+            "messages"
+        ]
+        depth = 1
+
+    @swagger_serializer_method(serializer_or_field=MessageStatisticSerializer(read_only=True))
+    def get_messages(self, obj):
+        obj: MessagingEvent
+        messages: QuerySet[ScheduledMessage] = obj.scheduled_messages.prefetch_related('sent_with_text', 'addressee')
+
+        messages_statistic = {
+            status_name: MessageStatisticSerializer(messages.filter(status=status_code), many=True).data
+            for status_code, status_name in MessageStatus.choices
+        }
+
+        return MessagesStatisticSerializer(messages_statistic).instance

@@ -119,9 +119,9 @@ class ScheduledMessage(models.Model):
 
 
 class ProcessingMessages(models.Model):
-    event = models.ForeignKey(MessagingEvent, on_delete=models.DO_NOTHING)
-    message = models.ForeignKey(ScheduledMessage, on_delete=models.DO_NOTHING)
-    addressee = models.ForeignKey(Addressee, on_delete=models.DO_NOTHING)
+    event = models.ForeignKey(MessagingEvent, on_delete=models.DO_NOTHING, related_name='processing_messages')
+    message = models.ForeignKey(ScheduledMessage, on_delete=models.DO_NOTHING, related_name='processing_messages')
+    addressee = models.ForeignKey(Addressee, on_delete=models.DO_NOTHING, related_name='processing_messages')
     text = models.ForeignKey(MessageText, on_delete=models.DO_NOTHING)
 
     event_title = models.CharField(max_length=512)
@@ -139,9 +139,9 @@ class ProcessingMessages(models.Model):
 
 
 class ActiveMessages(models.Model):
-    event = models.ForeignKey(MessagingEvent, on_delete=models.DO_NOTHING)
-    message = models.ForeignKey(ScheduledMessage, on_delete=models.DO_NOTHING)
-    addressee = models.ForeignKey(Addressee, on_delete=models.DO_NOTHING)
+    event = models.ForeignKey(MessagingEvent, on_delete=models.DO_NOTHING, related_name='active_messages')
+    message = models.ForeignKey(ScheduledMessage, on_delete=models.DO_NOTHING, related_name='active_messages')
+    addressee = models.ForeignKey(Addressee, on_delete=models.DO_NOTHING, related_name='active_messages')
     text = models.ForeignKey(MessageText, on_delete=models.DO_NOTHING)
 
     event_title = models.CharField(max_length=512)

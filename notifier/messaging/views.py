@@ -4,7 +4,8 @@ from drf_yasg.utils import swagger_auto_schema
 
 from misc.views import DefaultGenericCreateView, DefaultRetrieveUpdateDestroyView
 from messaging.models import MessagingEvent
-from messaging.serializers import MessagingEventSerializer, MessagingEventRetrieveSerializer
+from messaging.serializers import MessagingEventSerializer, MessagingEventRetrieveSerializer, \
+    MessagingEventStatisticRetrieveSerializer
 
 
 class MessagingEventCreateView(DefaultGenericCreateView):
@@ -67,3 +68,17 @@ class MessagingEventRetrieveUpdateDestroyView(DefaultRetrieveUpdateDestroyView):
     )
     def destroy(self, request, *args, **kwargs):
         return super().destroy(request, *args, **kwargs)
+
+
+class MessagingEventStatisticRetrieveView(DefaultRetrieveUpdateDestroyView):
+    queryset = MessagingEvent.objects.all()
+    retrieve_serializer_class = MessagingEventStatisticRetrieveSerializer
+
+    @swagger_auto_schema(
+        operation_description="Get MessagingEvent",
+        responses={
+            drf_statuses.HTTP_200_OK: retrieve_serializer_class()
+        }
+    )
+    def get(self, request, *args, **kwargs):
+        return super().get(request, *args, **kwargs)
