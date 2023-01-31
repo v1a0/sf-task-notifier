@@ -74,7 +74,7 @@ def daily_statistic_emailing(self):
     events_list = messages.values('event_id').distinct()
     data = MessagingEventRetrieveSerializer(MessagingEvent.objects.filter(id__in=events_list), many=True).data
 
-    subject = 'Ежедневный отчет'
+    subject = f'Ежедневный отчет | {day_ago.isoformat()}'
     message = f'Статистика рассылок за {day_ago.isoformat()}\n\n\n'
 
     for event in data:
