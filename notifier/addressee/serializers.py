@@ -1,7 +1,8 @@
-from django.db import transaction
+from drf_yasg.utils import swagger_serializer_method
 from rest_framework.validators import UniqueValidator
 from rest_framework import serializers
-from drf_yasg.utils import swagger_serializer_method
+
+from django.db import transaction
 
 from addressee.models import Addressee, AddresseeTag
 from misc.messages import MSG

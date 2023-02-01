@@ -1,7 +1,7 @@
+from drf_yasg.utils import swagger_auto_schema
 from rest_framework import generics
 from rest_framework.response import Response
 import rest_framework.status as drf_statuses
-from drf_yasg.utils import swagger_auto_schema
 
 
 class DefaultGenericCreateView(generics.CreateAPIView):

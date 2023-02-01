@@ -1,9 +1,9 @@
 from rest_framework import generics
-from addressee.serializers import AddresseeSerializer, AddresseeRetrieveSerializer
 import rest_framework.status as drf_statuses
 from drf_yasg.utils import swagger_auto_schema
 
 from addressee.models import Addressee
+from addressee.serializers import AddresseeSerializer, AddresseeRetrieveSerializer
 
 from misc.views import DefaultGenericCreateView, DefaultRetrieveUpdateDestroyView
 

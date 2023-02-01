@@ -1,6 +1,9 @@
 from django.urls import path
 
-from addressee.views import AddresseeCreateView, AddresseesListView, AddresseeRetrieveUpdateDestroyView
+from addressee.views import \
+    AddresseeCreateView, \
+    AddresseesListView, \
+    AddresseeRetrieveUpdateDestroyView
 
 urlpatterns = [
     path('', AddresseeCreateView.as_view(), name='users_create'),
