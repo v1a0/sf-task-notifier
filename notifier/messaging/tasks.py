@@ -75,17 +75,18 @@ def messages_sending(self):
 
 @app.task(bind=True)
 def daily_statistic_emailing(self):
+    email_from = settings.EMAIL_HOST_USER
+    email_to = settings.EMAIL_TO
+
     today = now().date()
     day_ago = today - timedelta(days=1)
     two_days_ago = day_ago - timedelta(days=1)
+
     messages = ScheduledMessage.objects.filter(updated_at__gt=two_days_ago, updated_at__lt=today)
     events_list = messages.values('event_id').distinct()
     data = MessagingEventRetrieveSerializer(MessagingEvent.objects.filter(id__in=events_list), many=True).data
 
     subject = f'Ежедневный отчет | {day_ago.isoformat()}'
-    message = render_to_string('templates/email_template.html', {'events': data, 'now': day_ago.isoformat()})
+    message = render_to_string('email_template.html', {'events': data, 'now': day_ago.isoformat()})
 
-    email_from = settings.EMAIL_HOST_USER
-    email_to = settings.EMAIL_TO
-    send_mail(subject, message, settings.EMAIL_HOST_USER, ['to@example.com'], html_message=message)
-
+    return send_mail(subject, message, email_from, email_to, html_message=message)
