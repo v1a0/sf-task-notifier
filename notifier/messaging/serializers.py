@@ -1,13 +1,11 @@
-from django.utils.timezone import now
-from django.db.models import QuerySet
 from rest_framework import serializers
 from drf_yasg.utils import swagger_serializer_method
 
+from django.utils.timezone import now
 from django.db import transaction
-from django.db.models import Q
+from django.db.models import QuerySet, Q
 
 from addressee.models import Addressee
-
 from messaging.models import MessagingEvent, ScheduledMessage, MessageStatus
 
 
@@ -62,7 +60,7 @@ class MessagingEventSerializer(serializers.Serializer):
         return data
 
     @staticmethod
-    def schedule_messages_for_event(messaging_event, send_to_tags, send_to_codes):
+    def schedule_messages_for_event(messaging_event, send_to_tags, send_to_codes) -> MessagingEvent:
         matched_addressees = Addressee.objects.filter(
             Q(tags__title__in=send_to_tags) | Q(operator_code__in=send_to_codes)
         )

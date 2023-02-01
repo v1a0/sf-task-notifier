@@ -1,7 +1,13 @@
+import logging.config
+
 from django.db import models
-from django.core.validators import RegexValidator
 from django.core.validators import MaxValueValidator, MinValueValidator
+from django.utils.timezone import now
+
 from misc.messages import MSG
+
+
+logger = logging.getLogger(__name__)
 
 
 class AddresseeTag(models.Model):
@@ -26,8 +32,30 @@ class Addressee(models.Model):
 
     tags = models.ManyToManyField(AddresseeTag, related_name='addressee')
 
+    def __str__(self):
+        return f"<Addressee: " \
+               f"{self.id=}, " \
+               f"{self.name=}, " \
+               f"{self.phone_number=}, " \
+               f"{self.operator_code=}, " \
+               f"{self.created_at=}, " \
+               f"{self.updated_at=}" \
+               f">"
+
     def save(
         self, force_insert=False, force_update=False, using=None, update_fields=None
     ):
         self.operator_code = int(str(self.phone_number)[1:4])
+
+        logger.info(
+            f"Addressee updated: {self}"
+            if self.id else
+            f"Addressee created: {self}"
+        )
+
         super().save(force_insert=force_insert, force_update=force_update, using=using, update_fields=update_fields)
+
+    def delete(self, using=None, keep_parents=False):
+        logger.info(f"Addressee deleted: {self}")
+
+        return super().delete(using=using, keep_parents=keep_parents)

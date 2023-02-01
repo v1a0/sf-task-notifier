@@ -1,3 +1,4 @@
+import logging
 from datetime import timedelta
 from rest_framework.status import HTTP_200_OK
 
@@ -8,34 +9,41 @@ from django.core.mail import send_mail
 from notifier.celery import app
 from messaging.fbrq import FbRQ
 from messaging.models import ActiveMessages, MessageStatus, ScheduledMessage, MessageText, MessagingEvent
-from messaging.serializers import MessageStatisticSerializer, MessagingEventRetrieveSerializer
+from messaging.serializers import MessagingEventRetrieveSerializer
+
+
+logger = logging.getLogger(__name__)
 
 
 @app.task(bind=True)
 def messages_sending(self):
     task_id = self.request.id
-    data = ActiveMessages.get_and_reserve(task_id=task_id)
+    data = ActiveMessages.get_and_reserve(task_id=task_id, limit=settings.MESSAGING_SENDING_LIMIT_MESSAGES_PER_CYCLE)
     service = FbRQ(token=settings.FBRQ_API_TOKEN)
 
     sending_ok_msgs = {}            # message sent well
     sending_failed_msgs_ids = []    # not ok response from FbRQ API
     sending_canceled_msgs_ids = []  # sending is outdated
 
-    log = []
-
     for instance in data:
+        logger.warning(f"Processing messaging event: {instance.event_id=}")
+
         if now() < instance.stop_at:
             response = service.send_message(instance.message_id, instance.phone_number, instance.text_value)
         else:
             sending_canceled_msgs_ids.append(instance.message_id)
-            log.append([instance.message_id, 'outdated', instance.stop_at])
+            logger.warning(
+                f"Sending time for message is outdated: {instance.stop_at}, {instance.message_id=}, {instance.event_id=}"
+            )
             continue
 
         if response == HTTP_200_OK:
             sending_ok_msgs[(instance.event_id, instance.text_id)] = \
                 sending_ok_msgs.get((instance.event_id, instance.text_id), list()) + [instance.message_id]
+            logger.info(f"Message sending success: {response=}, {instance.message_id=}, {instance.event_id=}")
+
         else:
-            log.append([instance.message_id, 'api response', response])
+            logger.warning(f"Message sending failed: {response=}, {instance.message_id=}, {instance.event_id=}")
             sending_failed_msgs_ids.append(instance.message_id)
 
     for (event_id, message_text_id), ok_messages_ids in sending_ok_msgs.items():
@@ -60,8 +68,7 @@ def messages_sending(self):
     return {
         'success': str(sending_ok_msgs),
         'filed': str(sending_failed_msgs_ids),
-        'canceled': str(sending_canceled_msgs_ids),
-        'log': str(log)
+        'canceled': str(sending_canceled_msgs_ids)
     }
 
 

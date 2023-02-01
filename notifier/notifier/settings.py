@@ -116,6 +116,36 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+# Logging
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'file': {
+            'class': 'logging.FileHandler',
+            'filename': 'general.log',
+            'level': 'DEBUG',
+        },
+        'console': {
+            'level': 'DEBUG',
+            'class': 'logging.StreamHandler',
+        },
+    },
+    'loggers': {
+        '': {
+            'level': 'DEBUG',
+            'handlers': ['file'],
+            'propagate': True
+        },
+    },
+}
+
+
+if DEBUG:
+    for logger in LOGGING['loggers']:
+        LOGGING['loggers'][logger]['handlers'] += ['console']
+
+
 # Internationalization
 # https://docs.djangoproject.com/en/4.1/topics/i18n/
 
@@ -153,6 +183,7 @@ CELERY_RESULT_BACKEND = f"{REDIS_BASE_URL}/1"
 
 # ===========
 MESSAGING_SENDING_CRON_DELAY = env.int('MESSAGING_SENDING_CRON_DELAY', 60)
+MESSAGING_SENDING_LIMIT_MESSAGES_PER_CYCLE = env.int('MESSAGING_SENDING_LIMIT_MESSAGES_PER_CYCLE', 200)
 FBRQ_API_TOKEN = env.str('FBRQ_API_TOKEN')
 
 # ===========

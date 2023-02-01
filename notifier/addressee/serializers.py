@@ -44,7 +44,8 @@ class AddresseeSerializer(serializers.Serializer):
         tags_to_create = self.filter_tags_to_create(tags_names)
 
         with transaction.atomic():
-            addressee.save()
+            if not addressee.id:
+                addressee.save()
 
             if addressee.tags:
                 addressee.tags.clear()
@@ -58,12 +59,12 @@ class AddresseeSerializer(serializers.Serializer):
     def create(self, validated_data):
         tags_names = validated_data.pop('tags')
         addressee = Addressee(**validated_data)
+        addressee.save()
 
         self.add_tags_to_addressee(
             addressee=addressee,
             tags_names=tags_names
         )
-        addressee.save()
 
         return addressee
 

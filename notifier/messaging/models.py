@@ -1,10 +1,14 @@
-from django.utils.timezone import now
+import logging.config
 
-from django.db import models
+from django.utils.timezone import now
+from django.db import models, transaction
 from django.utils.crypto import get_random_string
 from django.db.models import Count
 
 from addressee.models import Addressee
+
+
+logger = logging.getLogger(__name__)
 
 
 # Event
@@ -33,6 +37,16 @@ class MessagingEvent(models.Model):
 
     class Meta:
         indexes = [models.Index(fields=['start_at', 'stop_at'])]
+
+    def __str__(self):
+        return f"<MessagingEvent: " \
+               f"{self.id=}, " \
+               f"{self.title=}, " \
+               f"{self.start_at=}, " \
+               f"{self.stop_at=}, " \
+               f"{self.text_col=}, " \
+               f"{self.settings=}" \
+               f">"
 
     @property
     def is_active(self):
@@ -77,8 +91,19 @@ class MessagingEvent(models.Model):
     ):
         if not self.title:
             self.title = f"{self.default_title}_{get_random_string(16)}"
+        self.created_at = now()
+
+        logger.info(
+            f"MessagingEvent updated: {self}"
+            if self.id else
+            f"MessagingEvent created: {self}"
+        )
 
         super().save(force_insert=force_insert, force_update=force_update, using=using, update_fields=update_fields)
+
+    def delete(self, using=None, keep_parents=False):
+        logger.info(f"MessagingEvent deleted: {self}")
+        return super().delete(using=using, keep_parents=keep_parents)
 
 
 # Messaging
@@ -161,17 +186,20 @@ class ActiveMessages(models.Model):
 
     @classmethod
     def get_and_reserve(cls, task_id: str, limit: int = None):
-        ScheduledMessage.objects.filter(
-            id__in=cls.objects.all().values('message_id')
-            # id__in=cls.objects.all()[:limit].values('message_id')
-        ).update(
-            status=MessageStatus.PROCESSING,
-            updated_by_task=task_id,
-            updated_at=now()
-        )
+        if limit is None:
+            limit = -1
 
-        return ProcessingMessages.objects.filter(
-            status=MessageStatus.PROCESSING,
-            updated_by_task=task_id,
-        )
+        with transaction.atomic():
+            ScheduledMessage.objects.filter(
+                id__in=cls.objects.all()[:limit].values('message_id')
+            ).update(
+                status=MessageStatus.PROCESSING,
+                updated_by_task=task_id,
+                updated_at=now()
+            )
+
+            return ProcessingMessages.objects.filter(
+                status=MessageStatus.PROCESSING,
+                updated_by_task=task_id,
+            )
 
