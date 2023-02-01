@@ -5,6 +5,7 @@ from rest_framework.status import HTTP_200_OK
 from django.conf import settings
 from django.utils.timezone import now
 from django.core.mail import send_mail
+from django.template.loader import render_to_string
 
 from notifier.celery import app
 from messaging.fbrq import FbRQ
@@ -82,21 +83,9 @@ def daily_statistic_emailing(self):
     data = MessagingEventRetrieveSerializer(MessagingEvent.objects.filter(id__in=events_list), many=True).data
 
     subject = f'Ежедневный отчет | {day_ago.isoformat()}'
-    message = f'Статистика рассылок за {day_ago.isoformat()}\n\n\n'
-
-    for event in data:
-        message += f"""
-            Рассылка {event['id']} "{event['title']}"
-            Статистика:
-                Ожидает отправки: {event['statistic']['scheduled']}
-                В обработке: {event['statistic']['processing']}
-                Не удалось отправить: {event['statistic']['failed']}
-                Успешно доставлены: {event['statistic']['success']}
-            Текст рассылки:
-            "{event['text']}"
-        ================================================================ 
-        """
+    message = render_to_string('templates/email_template.html', {'events': data, 'now': day_ago.isoformat()})
 
     email_from = settings.EMAIL_HOST_USER
     email_to = settings.EMAIL_TO
-    return send_mail(subject, message, email_from, email_to)
+    send_mail(subject, message, settings.EMAIL_HOST_USER, ['to@example.com'], html_message=message)
+

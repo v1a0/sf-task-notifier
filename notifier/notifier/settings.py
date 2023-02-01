@@ -46,8 +46,10 @@ INSTALLED_APPS = [
     'rest_framework',
     'drf_yasg',
 
+    'api_doc',
     'addressee',
     'messaging',
+    'templates'
 ]
 
 MIDDLEWARE = [

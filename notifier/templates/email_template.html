@@ -1,0 +1,15 @@
+{% extends "templates/base_generic.html" %}
+
+{% block title %}Статистика рассылок за {{ now }}{% endblock %}
+
+{% block content %}
+{% for event in events %}
+<h2>Рассылка #{{ event.id }} {{event.title}}</h2>
+<h3>Статистика:</h3>
+<p>Ожидает отправки: {{ event.statistic.scheduled }}</p>
+<p>В обработке: {{ event.statistic.processing }}</p>
+<p>Не удалось отправить: {{ event.statistic.failed }}</p>
+<p>Успешно доставлены: {{ event.statistic.success }}</p>
+<p>Текст рассылки: "{{ event.text }}"</p>
+{% endfor %}
+{% endblock %}
