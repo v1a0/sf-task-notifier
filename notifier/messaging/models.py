@@ -6,6 +6,7 @@ from django.utils.crypto import get_random_string
 from django.db.models import Count
 
 from addressee.models import Addressee
+from misc.auto_log import log_save_update, log_delete
 
 
 logger = logging.getLogger(__name__)
@@ -86,6 +87,7 @@ class MessagingEvent(models.Model):
             for status_value, status_label in MessageStatus.choices
         }
 
+    @log_save_update(logger.info)
     def save(
         self, force_insert=False, force_update=False, using=None, update_fields=None
     ):
@@ -93,16 +95,10 @@ class MessagingEvent(models.Model):
             self.title = f"{self.default_title}_{get_random_string(16)}"
         self.created_at = now()
 
-        logger.info(
-            f"MessagingEvent updated: {self}"
-            if self.id else
-            f"MessagingEvent created: {self}"
-        )
-
         super().save(force_insert=force_insert, force_update=force_update, using=using, update_fields=update_fields)
 
+    @log_delete(logger.info)
     def delete(self, using=None, keep_parents=False):
-        logger.info(f"MessagingEvent deleted: {self}")
         return super().delete(using=using, keep_parents=keep_parents)
 
 

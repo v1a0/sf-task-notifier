@@ -121,15 +121,23 @@ AUTH_PASSWORD_VALIDATORS = [
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
+    'formatters': {
+        'simple': {
+            'format': '[{asctime}::{levelname}::{module}] {message}',
+            'style': '{',
+        },
+    },
     'handlers': {
         'file': {
             'class': 'logging.FileHandler',
-            'filename': 'general.log',
+            'filename': BASE_DIR / 'general.log',
             'level': 'DEBUG',
+            'formatter': 'simple'
         },
         'console': {
             'level': 'DEBUG',
             'class': 'logging.StreamHandler',
+            'formatter': 'simple'
         },
     },
     'loggers': {
