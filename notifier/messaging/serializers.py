@@ -54,8 +54,8 @@ class MessagingEventSerializer(serializers.Serializer):
         if data['start_at'] > data['stop_at']:
             raise serializers.ValidationError(f"Logic issue. Value of 'start_at' should not be greater than 'stop_at'")
 
-        if data['start_at'] < now():
-            raise serializers.ValidationError(f"Value of 'start_at' should be greater than present date/time")
+        # if data['start_at'] < now():
+        #     raise serializers.ValidationError(f"Value of 'start_at' should be greater than present date/time")
 
         return data
 

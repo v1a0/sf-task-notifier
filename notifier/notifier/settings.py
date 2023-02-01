@@ -191,9 +191,18 @@ CELERY_BROKER_URL = f"{REDIS_BASE_URL}/0"
 CELERY_RESULT_BACKEND = f"{REDIS_BASE_URL}/1"
 
 # ===========
-MESSAGING_SENDING_CRON_DELAY = env.int('MESSAGING_SENDING_CRON_DELAY', 60)
-MESSAGING_SENDING_LIMIT_MESSAGES_PER_CYCLE = env.int('MESSAGING_SENDING_LIMIT_MESSAGES_PER_CYCLE', 200)
 FBRQ_API_TOKEN = env.str('FBRQ_API_TOKEN')
+
+CRON = {
+    'messages-sending': {
+        'delay': env.int('MESSAGING_SENDING_LOOP_DELAY', 30),       # delay between loops one minute
+        'limit': env.int('MESSAGING_SENDING_LIMIT_PER_LOOP', 200)   # max messages amount sent per loop
+    },
+    'daily-statistic-emailing': {
+        'hour':   env.int('DAILY_STATISTIC_EMAILING_AT_HOUR', 0),
+        'minute': env.int('DAILY_STATISTIC_EMAILING_AT_MINUTE', 0)        # start every day at 00:00
+    },
+}
 
 # ===========
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'

@@ -19,7 +19,7 @@ logger = logging.getLogger(__name__)
 @app.task(bind=True)
 def messages_sending(self):
     task_id = self.request.id
-    data = ActiveMessages.get_and_reserve(task_id=task_id, limit=settings.MESSAGING_SENDING_LIMIT_MESSAGES_PER_CYCLE)
+    data = ActiveMessages.get_and_reserve(task_id=task_id, limit=settings.CRON['messages-sending']['limit'])
     service = FbRQ(token=settings.FBRQ_API_TOKEN)
 
     sending_ok_msgs = {}            # message sent well

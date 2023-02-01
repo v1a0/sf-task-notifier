@@ -37,30 +37,17 @@ services:
        - postgres
        - redis
 
-#  cron:
-#    build:
-#      dockerfile: ./docker/app/cron.Dockerfile
-#      context: .
-#    working_dir: /app/uchet/
-#    env_file:
-#      - .env
-#    restart: on-failure
-#    depends_on:
-#      - postgres
-#      - redis
-#
-#  cron_worker:
-#    build:
-#      dockerfile: ./docker/app/worker.Dockerfile
-#      context: .
-#    working_dir: /app/uchet/
-#    env_file:
-#      - .env
-#    restart: on-failure
-#    depends_on:
-#      - postgres
-#      - redis
-
+  cron:
+    build:
+      dockerfile: ./docker/app/cron.Dockerfile
+      context: .
+    working_dir: /app/notifier/
+    env_file:
+      - .env
+    restart: on-failure
+    depends_on:
+      - postgres
+      - redis
 
 
 volumes:
